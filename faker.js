@@ -35,7 +35,6 @@ jsf.extend('faker', function() {
   return require('faker');
 });
 
-console.log(process.argv)
 if (options.help || process.argv.length == 2) {
   console.log(usage(help));
   process.exit(0);
