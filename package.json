@@ -8,11 +8,13 @@
     "name": "Bartosz Majsak"
   },
   "dependencies": {
-    "json-schema-faker": "0.5.0-rc11",
-    "faker": "4.1.0",
     "command-line-args": "4.0.7",
     "command-line-usage": "4.0.1",
+    "faker": "4.1.0",
     "fs": "0.0.1-security",
-    "os-tmpdir": "1.0.2"
+    "json-schema-faker": "0.5.0-rc11",
+    "os-tmpdir": "1.0.2",
+    "request": "2.83.0",
+    "request-promise": "4.2.2"
   }
 }

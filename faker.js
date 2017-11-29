@@ -1,5 +1,6 @@
 const jsf = require('json-schema-faker');
 const fs = require('fs');
+const rp = require('request-promise');
 const tmpDir = require('os-tmpdir')();
 const cliArgs = require('command-line-args');
 const usage = require('command-line-usage');
@@ -24,13 +25,21 @@ const help = [
   }
 ];
 
+async function loadSchema(url)  {
+  return await rp.get({ uri: url, json: true });
+}
+
+async function generateFake(schema, location) {
+  return await jsf.resolve(schema).then(function(result) {
+    fs.writeFile(location, JSON.stringify(result, null, 2), function (err) {
+      if (err) {
+        console.error(err);
+      }
+    });
+  });
+}
+
 const options = cliArgs(optionDefinitions); 
-
-const REMOTE_REF = `https://raw.githubusercontent.com/bartoszmajsak/openshift-json-schema/master/v${options.version}-standalone/${options.kind}.json`;
-const schema = {
-  $ref: REMOTE_REF
-};
-
 jsf.extend('faker', function() {
   return require('faker');
 });
@@ -40,24 +49,18 @@ if (options.help || process.argv.length == 2) {
   process.exit(0);
 }
 
-
 jsf.option({alwaysFakeOptionals: options.fakeOptionals});
 
 if (!fs.existsSync(options.location)) {
   fs.mkdirSync(options.location);
 }
 
-let promises = [];
-for (let index = 0; index < options.number; index++) {
-  promises.push(jsf.resolve(schema).then(function(result) {
-    fs.writeFile(`${options.location}/faker-${options.kind}-${options.version}-${index}.json`, JSON.stringify(result, null, 2), function (err) {
-      if (err) {
-        console.error(err);
-      }
-    });
-  }));  
-}
+loadSchema(`https://raw.githubusercontent.com/bartoszmajsak/openshift-json-schema/master/v${options.version}-standalone/${options.kind}.json`).then(function (schema) {
+  for (let index = 0; index < options.number; index++) {
+    generateFake(schema, `${options.location}/faker-${options.kind}-${options.version}-${index}.json`);
+  } 
+})
 
-Promise.all(promises).then(function () {
+process.on('exit', function () {
   console.info(`Finished generating faker files for ${options.kind} kind defined for Openshift v${options.version}`);
 });
